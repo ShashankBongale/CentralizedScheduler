@@ -81,6 +81,8 @@ bool ReadConfigFile(const string& configFilePath, WorkerConfig& workerConfig)
 		workerConfig.numberOfSlots = masterConfigValue["NumberOfSlots"].asInt();
 
 		return true;
+
+
 	}
 	catch (char* excp)
 	{
