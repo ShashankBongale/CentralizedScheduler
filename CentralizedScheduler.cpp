@@ -3,6 +3,7 @@
 #include <json/json.h>
 
 #include "CentralizedScheduler.h"
+#include "Master.h"
 
 int main(int argc, char** argv)
 {
@@ -34,6 +35,10 @@ void RunMasterInstance(const string& configFilePath)
 
 	ReadConfigFile(configFilePath, masterConfig);
 
+	Master* masterInstance = new Master(masterConfig.workersSlots, masterConfig.tasksTimeFrame);
+
+	//masterInstance->Run();
+
 }
 
 void RunWorkerInstance(const string& configFilePath)
@@ -56,7 +61,12 @@ bool ReadConfigFile(const string& configFilePath, MasterConfig& masterConfig)
 		
 		for (Json::ValueIterator itr = masterConfigValue["TaskTimeFrame"].begin(); itr != masterConfigValue["TaskTimeFrame"].end(); ++itr)
 		{
-			masterConfig.taskTimeFrame.push_back(itr->asInt());
+			masterConfig.tasksTimeFrame.push_back(itr->asInt());
+		}
+
+		for (Json::ValueIterator itr = masterConfigValue["WorkersSlots"].begin(); itr != masterConfigValue["WorkersSlot"].end(); ++itr)
+		{
+			masterConfig.workersSlots.push_back(itr->asInt());
 		}
 
 		return true;
@@ -81,8 +91,6 @@ bool ReadConfigFile(const string& configFilePath, WorkerConfig& workerConfig)
 		workerConfig.numberOfSlots = masterConfigValue["NumberOfSlots"].asInt();
 
 		return true;
-
-
 	}
 	catch (char* excp)
 	{

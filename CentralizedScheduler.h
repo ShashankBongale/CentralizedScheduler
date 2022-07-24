@@ -8,7 +8,8 @@ using namespace std;
 typedef struct MasterConfig
 {
 	int numberOfWorkers;
-	vector<int> taskTimeFrame;
+	vector<int> tasksTimeFrame;
+	vector<int> workersSlots;
 
 }MasterConfig;
 
