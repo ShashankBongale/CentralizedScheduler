@@ -15,6 +15,7 @@ typedef struct MasterConfig
 
 typedef struct WorkerConfig
 {
+	int workerId;
 	int numberOfSlots;
 
 }WorkerConfig;

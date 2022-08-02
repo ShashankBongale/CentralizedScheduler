@@ -1,6 +1,9 @@
 #include <vector>
 #include <unordered_map>
+#include <queue>
+
 using namespace std;
+
 
 class Master
 {
@@ -12,23 +15,14 @@ public:
 
 private:
 	vector<int> m_workerRemainingSlots;
-	vector<int> m_taskDuration;
+	queue<int> m_taskDuration;
+	vector<bool> m_readyWorkers;
 	bool m_isJobDone = false;
+
 
 private:
 	void SendTasksToWorker();
 	void ListenToWorkerForTaskCompletion();
-	void FreeSlot(int workerCount);
+	void FreeSlot(const int& workerCount);
 };
 
-Master::Master(const vector<int>& workerSlots, const vector<int>& taskDuration)
-{
-	//Its assumed that tasks are loaded only one time in the start
-
-	m_workerRemainingSlots.assign(workerSlots.begin(), workerSlots.end());
-	m_taskDuration.assign(taskDuration.begin(), taskDuration.end());
-}
-
-Master::~Master()
-{
-}

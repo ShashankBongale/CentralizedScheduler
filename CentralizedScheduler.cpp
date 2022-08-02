@@ -89,6 +89,7 @@ bool ReadConfigFile(const string& configFilePath, WorkerConfig& workerConfig)
 		configFile >> masterConfigValue;
 
 		workerConfig.numberOfSlots = masterConfigValue["NumberOfSlots"].asInt();
+		workerConfig.workerId = masterConfigValue["WorkerId"].asInt();
 
 		return true;
 	}
