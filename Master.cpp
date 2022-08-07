@@ -52,6 +52,9 @@ void Master::Run()
         cout << "Failed to create task complete acknowlegdement thread" << endl;
         return;
     }
+
+    pthread_join(taskPublishThread, nullptr);
+    pthread_join(taskCompleteAckThread, nullptr);
 }
 
 void* Master::SendTasksToWorker(void* object)
@@ -88,6 +91,16 @@ void* Master::SendTasksToWorker(void* object)
         pthread_mutex_unlock(&obj->m_workerSlotsLock);
     }
 
+    //sending terminate msg to all the workers
+    for(vector<workerProperty>::iterator itr = obj->m_workerList.begin(); itr != obj->m_workerList.end(); ++itr)
+    {
+        zmq::message_t terminateMsg("0");
+        itr->sockPtr->send(terminateMsg, zmq::send_flags::none);
+
+        zmq::message_t clientReply;
+        itr->sockPtr->recv(clientReply);
+    }
+
     return nullptr;
 }
 
@@ -115,8 +128,6 @@ void* Master::ListenToWorkerForTaskCompletion(void* object)
                 break;
             }
         }
-
-        //think of a condition to end the while loop
     }
 
     return nullptr;
