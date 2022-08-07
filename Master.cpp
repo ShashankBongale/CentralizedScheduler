@@ -1,6 +1,5 @@
 #include <iostream>
 #include <unistd.h>
-#include <pthread.h>
 
 #include "Master.h"
 
@@ -69,6 +68,8 @@ void* Master::SendTasksToWorker(void* object)
         int selectedWorker = roundRobinCounter % numberOfWorkers;
         roundRobinCounter += 1;
 
+        pthread_mutex_lock(&obj->m_workerSlotsLock);
+
         if(obj->m_workerList[selectedWorker].remainingSlots <= 0)
             continue;
 
@@ -83,6 +84,8 @@ void* Master::SendTasksToWorker(void* object)
         obj->m_workerList[selectedWorker].sockPtr->recv(clientReply); //this will be dummy msg just to ack
 
         obj->m_workerList[selectedWorker].remainingSlots -= 1;
+
+        pthread_mutex_unlock(&obj->m_workerSlotsLock);
     }
 
     return nullptr;
@@ -106,7 +109,9 @@ void* Master::ListenToWorkerForTaskCompletion(void* object)
         {
             if(itr->socketNumber == atoi(workerSocketNum.c_str()))
             {
+                pthread_mutex_lock(&obj->m_workerSlotsLock);
                 itr->remainingSlots += 1;
+                pthread_mutex_lock(&obj->m_workerSlotsLock);
                 break;
             }
         }

@@ -1,6 +1,7 @@
 #include <vector>
 #include <unordered_map>
 #include <queue>
+#include <pthread.h>
 
 #include <zmq_addon.hpp>
 
@@ -29,6 +30,7 @@ private:
 	vector<bool> m_readyWorkers;
 	bool m_isJobDone = false;
 
+	pthread_mutex_t m_workerSlotsLock; 
 
 private:
 	static void* SendTasksToWorker(void* object);
