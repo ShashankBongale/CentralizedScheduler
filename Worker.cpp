@@ -17,6 +17,8 @@ Worker::~Worker()
 
 void Worker::Run()
 {
+    cout << "Starting worker" << endl;
+    
     zmq::socket_t sock(ctx, zmq::socket_type::rep);
     sock.connect("tcp://127.0.0.1:5555");
 

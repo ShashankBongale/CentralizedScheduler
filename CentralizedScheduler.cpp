@@ -59,6 +59,8 @@ bool ReadConfigFile(const string& configFilePath, MasterConfig& masterConfig)
 {
 	try
 	{
+		cout << "Reading master config file" << endl;
+
 		Json::Value masterConfigValue;
 		ifstream configFile(configFilePath, ifstream::binary);
 
@@ -66,14 +68,20 @@ bool ReadConfigFile(const string& configFilePath, MasterConfig& masterConfig)
 
 		masterConfig.numberOfWorkers = masterConfigValue["WorkersCount"].asInt();
 
+		cout << "Number of workers " << masterConfig.numberOfWorkers << endl;
+
+		cout << "Workers slots: " << endl;
+
+		for (Json::ValueIterator itr = masterConfigValue["WorkersSlots"].begin(); itr != masterConfigValue["WorkersSlots"].end(); ++itr)
+		{
+			masterConfig.workersSlots.push_back(itr->asInt());
+			cout << itr->asInt() << " ";
+		}
+		cout << endl;
+
 		for (Json::ValueIterator itr = masterConfigValue["TaskTimeFrame"].begin(); itr != masterConfigValue["TaskTimeFrame"].end(); ++itr)
 		{
 			masterConfig.tasksTimeFrame.push_back(itr->asInt());
-		}
-
-		for (Json::ValueIterator itr = masterConfigValue["WorkersSlots"].begin(); itr != masterConfigValue["WorkersSlot"].end(); ++itr)
-		{
-			masterConfig.workersSlots.push_back(itr->asInt());
 		}
 
 		return true;
@@ -90,6 +98,8 @@ bool ReadConfigFile(const string& configFilePath, WorkerConfig& workerConfig)
 {
 	try
 	{
+		cout << "Reading worker config file" << endl;
+
 		Json::Value masterConfigValue;
 		ifstream configFile(configFilePath, ifstream::binary);
 

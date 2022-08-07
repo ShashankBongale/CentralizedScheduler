@@ -23,6 +23,8 @@ Master::~Master()
 
 void Master::Run()
 {
+    cout << "Starting master" << endl;
+    
     sleep(10);
     zmq::socket_t sock(ctx, zmq::socket_type::req);
     sock.bind("tcp://127.0.0.1:5555");

@@ -1,6 +1,5 @@
 {
-    "WorkersCount"  :   4,
-    "TaskTimeFrame" :   [10, 122, 344, 11, 22],
-    "WorkersSlots"  :   [4, 5, 10, 3]
+    "WorkersCount"  :   3,
+    "WorkersSlots"  :   [10, 54, 55],
+    "TaskTimeFrame" :   [10, 122, 344, 11, 22]
 }
-
