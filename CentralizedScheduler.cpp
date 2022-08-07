@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <json/json.h>
+#include <zmq.hpp>
 
 #include "CentralizedScheduler.h"
 #include "Master.h"
@@ -25,7 +26,7 @@ int main(int argc, char** argv)
 		cout << "Invalid mode. Exiting" << endl;
 		return 0;
 	}
-	
+
 	return 0;
 }
 
@@ -58,7 +59,7 @@ bool ReadConfigFile(const string& configFilePath, MasterConfig& masterConfig)
 		configFile >> masterConfigValue;
 
 		masterConfig.numberOfWorkers = masterConfigValue["WorkersCount"].asInt();
-		
+
 		for (Json::ValueIterator itr = masterConfigValue["TaskTimeFrame"].begin(); itr != masterConfigValue["TaskTimeFrame"].end(); ++itr)
 		{
 			masterConfig.tasksTimeFrame.push_back(itr->asInt());
@@ -99,7 +100,3 @@ bool ReadConfigFile(const string& configFilePath, WorkerConfig& workerConfig)
 		return false;
 	}
 }
-
-
-
-

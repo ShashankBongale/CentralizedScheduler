@@ -25,3 +25,7 @@ bool ReadConfigFile(const string& configFilePath, WorkerConfig& workerConfig);
 
 void RunMasterInstance(const string& configFilePath);
 void RunWorkerInstance(const string& configFilePath);
+
+
+
+//end of .h
