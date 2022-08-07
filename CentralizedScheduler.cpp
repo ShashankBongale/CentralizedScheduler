@@ -1,16 +1,18 @@
 #include <iostream>
 #include <fstream>
+// #include </usr/include/jsoncpp/json/json.h>
 #include <json/json.h>
 #include <zmq.hpp>
 
 #include "CentralizedScheduler.h"
 #include "Master.h"
+#include "Worker.h"
 
 int main(int argc, char** argv)
 {
 	if (argc < 3)
 	{
-		cout << "Cofig file path not specified" << endl;
+		cout << "Invalid command line arguments" << endl;
 		return 0;
 	}
 
@@ -38,8 +40,7 @@ void RunMasterInstance(const string& configFilePath)
 
 	Master* masterInstance = new Master(masterConfig.workersSlots, masterConfig.tasksTimeFrame);
 
-	//masterInstance->Run();
-
+	masterInstance->Run();
 }
 
 void RunWorkerInstance(const string& configFilePath)
@@ -47,6 +48,11 @@ void RunWorkerInstance(const string& configFilePath)
 	WorkerConfig workerConfig;
 
 	ReadConfigFile(configFilePath, workerConfig);
+
+	Worker* workerInstance = new Worker(0, 0);
+
+	workerInstance->Run();
+
 }
 
 bool ReadConfigFile(const string& configFilePath, MasterConfig& masterConfig)
