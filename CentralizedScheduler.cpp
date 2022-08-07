@@ -1,6 +1,5 @@
 #include <iostream>
 #include <fstream>
-// #include </usr/include/jsoncpp/json/json.h>
 #include <json/json.h>
 #include <zmq.hpp>
 
@@ -38,7 +37,7 @@ void RunMasterInstance(const string& configFilePath)
 
 	ReadConfigFile(configFilePath, masterConfig);
 
-	Master* masterInstance = new Master(masterConfig.workersSlots, masterConfig.tasksTimeFrame);
+	Master* masterInstance = new Master(masterConfig.workersSlots, masterConfig.workerSocket, masterConfig.tasksTimeFrame);
 
 	masterInstance->Run();
 }
@@ -75,6 +74,13 @@ bool ReadConfigFile(const string& configFilePath, MasterConfig& masterConfig)
 		for (Json::ValueIterator itr = masterConfigValue["WorkersSlots"].begin(); itr != masterConfigValue["WorkersSlots"].end(); ++itr)
 		{
 			masterConfig.workersSlots.push_back(itr->asInt());
+			cout << itr->asInt() << " ";
+		}
+		cout << endl;
+
+		for(Json::ValueIterator itr = masterConfigValue["WorkerSocket"].begin(); itr != masterConfigValue["WorkerSocket"].end(); ++itr)
+		{
+			masterConfig.workerSocket.push_back(itr->asInt());
 			cout << itr->asInt() << " ";
 		}
 		cout << endl;

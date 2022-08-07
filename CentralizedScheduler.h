@@ -10,6 +10,7 @@ typedef struct MasterConfig
 	int numberOfWorkers;
 	vector<int> tasksTimeFrame;
 	vector<int> workersSlots;
+	vector<int> workerSocket;
 
 }MasterConfig;
 
