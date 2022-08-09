@@ -1,4 +1,5 @@
 {
     "NumberOfSlots"  :   4,
-    "WorkerId" :   100
+    "WorkerSocket" :   5555,
+    "TaskCompleteAckSocket" : 6000
 }

@@ -5,7 +5,9 @@
 
 static zmq::context_t ctx;
 
-Master::Master(const vector<int>& workerSlots, const vector<int>& workerSocket, const vector<int>& taskDuration)
+Master::Master(const vector<int>& workerSlots, const vector<int>& workerSocket, const vector<int>& taskDuration,
+const int& taskCompleteAckSocket)
+
 {
     vector<int>::const_iterator itr1 = workerSocket.begin();
     vector<int>::const_iterator itr2 = workerSlots.begin();
@@ -28,6 +30,8 @@ Master::Master(const vector<int>& workerSlots, const vector<int>& workerSocket, 
     {
         m_taskDuration.push(*itr);
     }
+
+    m_taskCompleteAckSocket = taskCompleteAckSocket;
 }
 
 Master::~Master()
@@ -55,6 +59,8 @@ void Master::Run()
 
     pthread_join(taskPublishThread, nullptr);
     pthread_join(taskCompleteAckThread, nullptr);
+
+    cout << "Exiting master" << endl;
 }
 
 void* Master::SendTasksToWorker(void* object)
@@ -74,7 +80,10 @@ void* Master::SendTasksToWorker(void* object)
         pthread_mutex_lock(&obj->m_workerSlotsLock);
 
         if(obj->m_workerList[selectedWorker].remainingSlots <= 0)
+        {
+            pthread_mutex_unlock(&obj->m_workerSlotsLock);
             continue;
+        }
 
         int taskDurationTime = obj->m_taskDuration.front();
         obj->m_taskDuration.pop();
@@ -91,7 +100,7 @@ void* Master::SendTasksToWorker(void* object)
         pthread_mutex_unlock(&obj->m_workerSlotsLock);
     }
 
-    //sending terminate msg to all the workers
+    cout << "Sending term message to all workers" << endl;
     for(vector<workerProperty>::iterator itr = obj->m_workerList.begin(); itr != obj->m_workerList.end(); ++itr)
     {
         zmq::message_t terminateMsg("0");
@@ -109,7 +118,8 @@ void* Master::ListenToWorkerForTaskCompletion(void* object)
     Master* obj = (Master *)object;
 
     zmq::socket_t sock(ctx, zmq::socket_type::rep);
-    sock.bind("tcp://127.0.0.1:6000");
+    string url = "tcp://127.0.0.1:" + to_string(obj->m_taskCompleteAckSocket);
+    sock.bind(url);
 
     while(true)
     {
@@ -118,6 +128,8 @@ void* Master::ListenToWorkerForTaskCompletion(void* object)
 
         string workerSocketNum = taskCompleteMsg.to_string();
 
+        cout << "Received socket completion from worker on socket " << workerSocketNum << endl;
+        
         for(vector<workerProperty>::iterator itr = obj->m_workerList.begin(); itr != obj->m_workerList.end(); ++itr)
         {
             if(itr->socketNumber == atoi(workerSocketNum.c_str()))

@@ -8,10 +8,11 @@ static zmq::context_t ctx;
 
 #define MICRO 1000000
 
-Worker::Worker(const unsigned long& numberOfSlots, const int& workerSocket)
+Worker::Worker(const unsigned long& numberOfSlots, const int& workerSocket, const int& taskCompleteAckSock)
 {
     m_numberOfSlots = numberOfSlots;
     m_workerSocket = workerSocket;
+    m_taskCompleteAckSocket = taskCompleteAckSock;
 }
 
 Worker::~Worker()
@@ -81,7 +82,8 @@ void* Worker::PermformTask(void* selfObject)
     Worker* selfObj = (Worker *)selfObject;
 
     zmq::socket_t taskCompleteAckSock(ctx, zmq::socket_type::req);
-    taskCompleteAckSock.connect("tcp://127.0.0.1:6000");
+    string url = "tcp://127.0.0.1:" + to_string(selfObj->m_taskCompleteAckSocket);
+    taskCompleteAckSock.connect(url);
 
     while(true)
     {

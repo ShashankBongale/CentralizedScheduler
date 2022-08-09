@@ -24,7 +24,7 @@ int main(int argc, char** argv)
 		RunWorkerInstance(configFilePath);
 	else
 	{
-		cout << "Invalid mode. Exiting" << endl;
+		cout << "Invalid mode, exiting" << endl;
 		return 0;
 	}
 
@@ -37,7 +37,7 @@ void RunMasterInstance(const string& configFilePath)
 
 	ReadConfigFile(configFilePath, masterConfig);
 
-	Master* masterInstance = new Master(masterConfig.workersSlots, masterConfig.workerSocket, masterConfig.tasksTimeFrame);
+	Master* masterInstance = new Master(masterConfig.workersSlots, masterConfig.workerSocket, masterConfig.tasksTimeFrame, masterConfig.taskCompleteAckSocket);
 
 	masterInstance->Run();
 }
@@ -48,7 +48,7 @@ void RunWorkerInstance(const string& configFilePath)
 
 	ReadConfigFile(configFilePath, workerConfig);
 
-	Worker* workerInstance = new Worker(0, 0);
+	Worker* workerInstance = new Worker(workerConfig.numberOfSlots, workerConfig.workerSocket, workerConfig.taskCompleteAckSocket);
 
 	workerInstance->Run();
 
@@ -69,18 +69,18 @@ bool ReadConfigFile(const string& configFilePath, MasterConfig& masterConfig)
 
 		cout << "Number of workers " << masterConfig.numberOfWorkers << endl;
 
-		cout << "Workers slots: " << endl;
-
-		for (Json::ValueIterator itr = masterConfigValue["WorkersSlots"].begin(); itr != masterConfigValue["WorkersSlots"].end(); ++itr)
+		cout << "Workers socket: " << endl;
+		for(Json::ValueIterator itr = masterConfigValue["WorkerSocket"].begin(); itr != masterConfigValue["WorkerSocket"].end(); ++itr)
 		{
-			masterConfig.workersSlots.push_back(itr->asInt());
+			masterConfig.workerSocket.push_back(itr->asInt());
 			cout << itr->asInt() << " ";
 		}
 		cout << endl;
 
-		for(Json::ValueIterator itr = masterConfigValue["WorkerSocket"].begin(); itr != masterConfigValue["WorkerSocket"].end(); ++itr)
+		cout << "Workers slots: " << endl;
+		for (Json::ValueIterator itr = masterConfigValue["WorkersSlots"].begin(); itr != masterConfigValue["WorkersSlots"].end(); ++itr)
 		{
-			masterConfig.workerSocket.push_back(itr->asInt());
+			masterConfig.workersSlots.push_back(itr->asInt());
 			cout << itr->asInt() << " ";
 		}
 		cout << endl;
@@ -89,6 +89,9 @@ bool ReadConfigFile(const string& configFilePath, MasterConfig& masterConfig)
 		{
 			masterConfig.tasksTimeFrame.push_back(itr->asInt());
 		}
+
+		masterConfig.taskCompleteAckSocket = masterConfigValue["TaskCompleteAckSocket"].asInt();
+		cout << "Task complete acknowlegdement socket: " << masterConfig.taskCompleteAckSocket << endl;
 
 		return true;
 	}
@@ -106,13 +109,19 @@ bool ReadConfigFile(const string& configFilePath, WorkerConfig& workerConfig)
 	{
 		cout << "Reading worker config file" << endl;
 
-		Json::Value masterConfigValue;
+		Json::Value workerConfigValue;
 		ifstream configFile(configFilePath, ifstream::binary);
 
-		configFile >> masterConfigValue;
+		configFile >> workerConfigValue;
 
-		workerConfig.numberOfSlots = masterConfigValue["NumberOfSlots"].asInt();
-		workerConfig.workerId = masterConfigValue["WorkerId"].asInt();
+		workerConfig.numberOfSlots = workerConfigValue["NumberOfSlots"].asInt();
+		cout<< "Number of slots: " << workerConfig.numberOfSlots << endl;
+
+		workerConfig.workerSocket = workerConfigValue["WorkerSlot"].asInt();
+		cout << "Worker socket: " << workerConfig.workerSocket;
+
+		workerConfig.taskCompleteAckSocket = workerConfigValue["TaskCompleteAckSocket"].asInt();
+		cout << "Task complete acknowlegdement socket: " << workerConfig.taskCompleteAckSocket << endl;
 
 		return true;
 	}

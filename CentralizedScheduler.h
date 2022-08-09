@@ -8,6 +8,7 @@ using namespace std;
 typedef struct MasterConfig
 {
 	int numberOfWorkers;
+	int taskCompleteAckSocket;
 	vector<int> tasksTimeFrame;
 	vector<int> workersSlots;
 	vector<int> workerSocket;
@@ -16,8 +17,9 @@ typedef struct MasterConfig
 
 typedef struct WorkerConfig
 {
-	int workerId;
+	int workerSocket;
 	int numberOfSlots;
+	int taskCompleteAckSocket;
 
 }WorkerConfig;
 
