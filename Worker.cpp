@@ -1,13 +1,17 @@
 #include <iostream>
+#include <unistd.h>
 #include <zmq_addon.hpp>
+
 #include "Worker.h"
 
 static zmq::context_t ctx;
 
-Worker::Worker(const unsigned long& numberOfSlots, const int& workerId)
+#define MICRO 1000000
+
+Worker::Worker(const unsigned long& numberOfSlots, const int& workerSocket)
 {
     m_numberOfSlots = numberOfSlots;
-    m_workerId = workerId;
+    m_workerSocket = workerSocket;
 }
 
 Worker::~Worker()
@@ -17,21 +21,6 @@ Worker::~Worker()
 
 void Worker::Run()
 {
-    // cout << "Starting worker" << endl;
-    //
-    // zmq::socket_t sock(ctx, zmq::socket_type::rep);
-    // sock.connect("tcp://127.0.0.1:5555");
-    //
-    // zmq::message_t serverMsg;
-    // sock.recv(serverMsg);
-    //
-    // cout << "Received " << serverMsg.to_string() << " from server" << endl;
-    //
-    // string trialMessage = "Message from client";
-    // zmq::message_t clientMsg(trialMessage);
-    //
-    // sock.send(clientMsg, zmq::send_flags::none);
-
     pthread_t getTaskThread;
     int iRetVal = pthread_create(&getTaskThread, nullptr, &GetTasks, this);
     if(!iRetVal)
@@ -42,7 +31,7 @@ void Worker::Run()
 
     pthread_t performTaskThread;
     iRetVal = pthread_create(&performTaskThread, nullptr, &PermformTask, this);
-    if(!RetVal)
+    if(!iRetVal)
     {
         cout << "Failed to create perform task thread" << endl;
         return;
@@ -67,10 +56,10 @@ void* Worker::GetTasks(void* self)
         zmq::message_t taskDurationMsg;
         sock.recv(taskDurationMsg);
 
-        pthread_mutex_lock(&m_taskQueueLock);
+        pthread_mutex_lock(&selfObj->m_taskQueueLock);
         string taskDuration = taskDurationMsg.to_string();
-        selfObj->m_taskQueue.push(atoi(taskDuration));
-        pthread_mutex_lock(&m_taskQueueLock);
+        selfObj->m_taskQueue.push(atoi(taskDuration.c_str()));
+        pthread_mutex_unlock(&selfObj->m_taskQueueLock);
 
         string trialMessage;
         zmq::message_t clientMsg(trialMessage);
@@ -78,9 +67,48 @@ void* Worker::GetTasks(void* self)
 
         if(taskDuration == "0")
         {
-            cout << "Received termintate msg from master" << endl;
+            cout << "Received terminate msg from master" << endl;
             break;
         }
     }
 
+    return nullptr;
+
+}
+
+void* Worker::PermformTask(void* selfObject)
+{
+    Worker* selfObj = (Worker *)selfObject;
+
+    zmq::socket_t taskCompleteAckSock(ctx, zmq::socket_type::req);
+    taskCompleteAckSock.connect("tcp://127.0.0.1:6000");
+
+    while(true)
+    {
+        pthread_mutex_lock(&selfObj->m_taskQueueLock);
+        if(selfObj->m_taskQueue.empty())
+        {
+            pthread_mutex_unlock(&selfObj->m_taskQueueLock);
+            usleep(2 * MICRO); //sleeping for 2 seconds
+            continue;
+        }
+
+        int taskDuration = selfObj->m_taskQueue.front();
+        selfObj->m_taskQueue.pop();
+
+        pthread_mutex_unlock(&selfObj->m_taskQueueLock);
+
+        if(taskDuration == 0)
+            break;
+
+        cout << "Performing task for " << taskDuration << "secs" << endl;
+
+        usleep(taskDuration * MICRO);
+
+        zmq::message_t taskCompleteMsg(to_string(selfObj->m_workerSocket));
+        taskCompleteAckSock.send(taskCompleteMsg, zmq::send_flags::none);
+
+    }
+
+    return nullptr;
 }

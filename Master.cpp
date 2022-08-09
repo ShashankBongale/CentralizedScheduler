@@ -109,7 +109,7 @@ void* Master::ListenToWorkerForTaskCompletion(void* object)
     Master* obj = (Master *)object;
 
     zmq::socket_t sock(ctx, zmq::socket_type::rep);
-    sock.connect("tcp://127.0.0.1:6000");
+    sock.bind("tcp://127.0.0.1:6000");
 
     while(true)
     {
